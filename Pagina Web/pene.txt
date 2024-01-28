@@ -1,0 +1,66 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    const cartQuantity = document.getElementById('cart-quantity');
+
+    let cartItems = [];
+    let total = 0;
+    let quantity = 0;
+
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const product = button.parentElement.querySelector('h3').innerText;
+            const priceText = button.parentElement.querySelector('p').innerText;
+            
+            // Extraer el valor numérico del precio
+            const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+
+            console.log(`Producto: ${product}, Precio: ${price}`);
+            
+            // Verificar si el producto ya está en el carrito
+            const existingItem = cartItems.find(item => item.product === product);
+
+            if (existingItem) {
+                // Incrementar la cantidad si el producto ya está en el carrito
+                existingItem.quantity++;
+            } else {
+                // Agregar el producto al carrito con cantidad 1 si es la primera vez
+                cartItems.push({ product, price, quantity: 1 });
+            }
+
+            updateCart();
+        });
+    });
+
+    function updateCart() {
+        cartItemsContainer.innerHTML = '';
+
+        cartItems.forEach(item => {
+            const cartItem = document.createElement('div');
+            cartItem.classList.add('cart-item');
+            cartItem.innerHTML = `
+                <p>${item.product}</p>
+                <p>Cantidad: ${item.quantity}</p>
+            `;
+            cartItemsContainer.appendChild(cartItem);
+        });
+
+        // Filtrar precios válidos antes de sumarlos
+        const validPrices = cartItems.map(item => item.price * item.quantity).filter(price => !isNaN(price));
+        total = validPrices.reduce((acc, price) => acc + price, 0);
+
+        quantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+        console.log(`Total: ${total}, Cantidad: ${quantity}`);
+        
+        // Verificar si 'total' es un número antes de mostrarlo
+        if (!isNaN(total)) {
+            cartTotal.innerText = `Total: Q${total.toFixed(2)}`;
+        } else {
+            cartTotal.innerText = `Total: ¡Error en los precios!`;
+        }
+
+        cartQuantity.innerText = `Cantidad total: ${quantity}`;
+    }
+});
